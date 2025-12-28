@@ -32,29 +32,39 @@ export const signup =async (req, res)=>{
 }
 
 //Controller to login a user
-export const login = async(req, res)=>{
-    try {
-        const {email, password} = req.body;
-        const userData = await User.findOne({email})
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-        const isPasswordCorrect = await bcrypt.compare(password, 
-        userData.password);
-
-        if (!isPasswordCorrect){
-            return res.json({success: false, message:"Invalid credntials"})
-        }
-        const token = generateToken(userUser._id)
-        
-        res.json({success:true,
-             userData, 
-             token, 
-             message:"Login successfully"})
-
-    }catch (error){
-        console.log(error.message);
-        res.json({success:false, message: error.message})
+    const userData = await User.findOne({ email });
+    if (!userData) {
+      return res.json({ success:false, message:"User not found" });
     }
-}
+
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      userData.password
+    );
+
+    if (!isPasswordCorrect) {
+      return res.json({ success:false, message:"Invalid credentials" });
+    }
+
+    const token = generateToken(userData._id);
+
+    res.json({
+      success: true,
+      userData,
+      token,
+      message: "Login successfully"
+    });
+
+  } catch (error) {
+    console.log(error.message);
+    res.json({ success:false, message: error.message });
+  }
+};
+
 
 //Controller to check if user is authenticated 
 export const checkAuth = (req, res)=>{
