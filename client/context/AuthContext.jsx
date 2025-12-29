@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.get("/api/auth/check");
       if (data.success) {
         setAuthUser(data.user);
-        connectSocket(data.user);
+        connectSocket(data.user);  
       }
     } catch (error) {
       console.log(error);
@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common["token"] = token;
       checkAuth();
     }
-  }, []);
+  }, [token]);
 
   //  VERY IMPORTANT (THIS FIXES YOUR ERROR)
   const value = {

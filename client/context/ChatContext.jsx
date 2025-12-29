@@ -38,42 +38,61 @@ export const ChatProvider = ({ children }) => {
   };
 
   // send message
-  const sendMessage = async (messageData) => {
-    try {
-      const { data } = await axios.post(
-        `/api/messages/send/${selectedUser._id}`,
-        messageData
-      );
+const sendMessage = async (messageData) => {
+  if (!selectedUser) {
+    return toast.error("Select a user first");
+  }
 
-      if (data.success) {
-        setMessages((prev) => [...prev, data.newMessage]);
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      toast.error(error.message);
+  if (!messageData?.text || messageData.text.trim() === "") {
+    return toast.error("Message cannot be empty");
+  }
+
+  try {
+    const { data } = await axios.post(
+      `/api/messages/send/${selectedUser._id}`,
+      messageData
+    );
+
+    if (data.success) {
+      setMessages((prev) => [...prev, data.newMessage]);
     }
-  };
+  } catch (error) {
+    toast.error(error.response?.data?.message || error.message);
+  }
+};
 
-  // socket subscribe
-  const subscribeToMessages = () => {
-    if (!socket) return;
 
-    socket.off("newMessage");
+const subscribeToMessages = () => {
+  if (!socket) return;
 
-    socket.on("newMessage", (newMessage) => {
-      if (selectedUser && newMessage.senderId === selectedUser._id) {
-        newMessage.seen = true;
-        setMessages((prev) => [...prev, newMessage]);
-        axios.put(`/api/messages/mark/${newMessage._id}`);
-      } else {
-        setUnseenMessages((prev) => ({
-          ...prev,
-          [newMessage.senderId]: (prev[newMessage.senderId] || 0) + 1,
-        }));
+  socket.off("newMessage");
+
+  socket.on("newMessage", async (newMessage) => {
+  
+    if (
+      selectedUser &&
+      String(newMessage.senderId) === String(selectedUser._id)
+    ) {
+      // mark as seen
+      newMessage.seen = true;
+
+      setMessages((prev) => [...prev, newMessage]);
+
+      try {
+        await axios.put(`/api/messages/mark/${newMessage._id}`);
+      } catch (err) {
+        console.log("Failed to mark message as seen");
       }
-    });
-  };
+    } else {
+      // sidebar unseen count update
+      setUnseenMessages((prev) => ({
+        ...prev,
+        [newMessage.senderId]: (prev[newMessage.senderId] || 0) + 1,
+      }));
+    }
+  });
+};
+
 
   const unsubscribeFromMessages = () => {
     if (socket) socket.off("newMessage");
