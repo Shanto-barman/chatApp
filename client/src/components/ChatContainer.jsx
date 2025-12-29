@@ -89,7 +89,7 @@ const ChatContainer = () => {
             <input onChange={(e)=>setInput(e.target.value)} value={input} onKeyDown={(e)=> e.key === "Enter" ? handleSendMessage(e) : null} type="text" placeholder='Send a message'  className="flex-1 text-sm p-3 border-none rounded-lg outline-none text-white placeholer-gray-400" />
             <input onChange={handleSendImage} type="file" id='image' accept='image/png, image/jpeg' hidden/>
             <label htmlFor="image">
-              <img src={assets.gallery_icon} alt="" className='w-5 mr-2 cursor-pointer' />
+              <img src={assets.gallery_icon} alt="upload" className='w-5 mr-2 cursor-pointer' />
             </label>
           </div>
 

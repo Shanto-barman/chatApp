@@ -62,38 +62,81 @@ export const markMessageAsSeen = async (req, res)=>{
 }
 
 // Send message to selected user
-export const sendMessage = async (req, res) => {
-  try {
-    const { text, image } = req.body;
-    const receiverId = req.params.id;
-    const senderId = req.user._id;
+// export const sendMessage = async (req, res) => {
+//   try {
+//     const { text, image } = req.body;
+//     const receiverId = req.params.id;
+//     const senderId = req.user._id;
 
-    let imageUrl;
-    if (image) {
-      const uploadResponse = await cloudinary.uploader.upload(image);
-      imageUrl = uploadResponse.secure_url;
-    }
+//     let imageUrl;
+//     if (image) {
+//       const uploadResponse = await cloudinary.uploader.upload(image);
+//       imageUrl = uploadResponse.secure_url;
+//       console.log("IMAGE DATA:", image.slice(0,50)); 
 
-    const newMessage = await Message.create({
-      senderId,
-      receiverId,
-      text,
-      image: imageUrl,
-    });
+//     }
 
-    // socket emit
-    const receiverSocketId = userSocketMap[receiverId];
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage);
-    }
+//     const newMessage = await Message.create({
+//       senderId,
+//       receiverId,
+//       text,
+//       image: imageUrl,
+//     });
 
-    res.json({ success: true, newMessage });
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+//     // socket emit
+//     const receiverSocketId = userSocketMap[receiverId];
+//     if (receiverSocketId) {
+//       io.to(receiverSocketId).emit("newMessage", newMessage);
+//     }
 
-         
+//     res.json({ success: true, newMessage });
+//   } catch (error) {
+//     console.log(error.message);
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+    export const sendMessage = async (req, res) => {
+      try {
+        const { text, image } = req.body;
+        const receiverId = req.params.id;
+        const senderId = req.user._id;
+
+        // Prevent empty message
+        if ((!text || text.trim() === "") && !image) {
+          return res.status(400).json({ success: false, message: "Message cannot be empty" });
+        }
+
+        let imageUrl;
+        if (image) {
+          // Ensure base64 string is valid
+          if (!image.startsWith("data:image")) {
+            return res.status(400).json({ success: false, message: "Invalid image format" });
+          }
+          // Upload to Cloudinary
+          const uploadResponse = await cloudinary.uploader.upload(image);
+          imageUrl = uploadResponse.secure_url;
+          console.log("IMAGE DATA:", image.slice(0,50));
+        }
+
+        const newMessage = await Message.create({
+          senderId,
+          receiverId,
+          text: text?.trim() || "",
+          image: imageUrl || "",
+        });
+
+        // Emit via socket
+        const receiverSocketId = userSocketMap[receiverId];
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("newMessage", newMessage);
+        }
+
+        res.json({ success: true, newMessage });
+      } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ success: false, message: error.message });
+      }
+    };
 
 
