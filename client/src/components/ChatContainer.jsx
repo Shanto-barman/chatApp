@@ -4,7 +4,7 @@ import { formatMessageTime } from "../lib/utils";
 import { ChatContext } from "../../context/ChatContext";
 import { AuthContext } from "../../context/AuthContext";
 import toast from "react-hot-toast";
-import { IoSend } from "react-icons/io5";
+
 
 const ChatContainer = () => {
   const { messages, selectedUser, setSelectedUser, sendMessage, getMessages } =
@@ -75,7 +75,7 @@ const ChatContainer = () => {
         <img
           src={selectedUser.profilePic || assets.avatar_icon}
           alt=""
-          className="w-8 rounded-full"
+          className="w-8 h-8 rounded-full"
         />
         <p className="flex-1 text-lg text-white flex items-center gap-2">
           {selectedUser.fullName}
@@ -106,7 +106,7 @@ const ChatContainer = () => {
               <img
                 src={selectedUser?.profilePic || assets.avatar_icon}
                 alt=""
-                className="w-7 rounded-full"
+                className="w-7 h-7 rounded-full"
               />
             )}
 
@@ -167,7 +167,7 @@ const ChatContainer = () => {
             <img
               src={assets.gallery_icon}
               alt="upload"
-              className="w-5 mr-2 cursor-pointer"
+              className="w-5 h-5 mr-2 cursor-pointer"
             />
           </label>
         </div>
