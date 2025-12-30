@@ -38,19 +38,22 @@ export const ChatProvider = ({ children }) => {
   };
 
   // send message
-const sendMessage = async (messageData) => {
-  if (!selectedUser) {
-    return toast.error("Select a user first");
-  }
 
-  if (!messageData?.text || messageData.text.trim() === "") {
+const sendMessage = async (messageData) => {
+  if (!selectedUser) return toast.error("Select a user first");
+
+  if ((!messageData.text || messageData.text.trim() === "") && !messageData.image) {
     return toast.error("Message cannot be empty");
   }
 
   try {
     const { data } = await axios.post(
       `/api/messages/send/${selectedUser._id}`,
-      messageData
+      messageData,
+      {
+        headers: { "Content-Type": "application/json" } 
+        // <- important
+      }
     );
 
     if (data.success) {
@@ -62,6 +65,8 @@ const sendMessage = async (messageData) => {
 };
 
 
+
+//subscribeToMessages
 const subscribeToMessages = () => {
   if (!socket) return;
 
