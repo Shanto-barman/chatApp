@@ -13,7 +13,7 @@ const server = http.createServer(app);
 // Allowed origins for local + production
 const allowedOrigins = [
   "http://localhost:5173", // local frontend
-  process.env.FRONTEND_URL  // production frontend
+  process.env.FRONTEND_URL || "https://chat-app-x296.vercel.app" // production frontend
 ];
 
 // Middleware
