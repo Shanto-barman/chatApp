@@ -12,8 +12,8 @@ const server = http.createServer(app);
 
 // Allowed origins for local + production
 const allowedOrigins = [
-  "http://localhost:5173", 
-  process.env.FRONTEND_URL  
+  "http://localhost:5173", // local frontend
+  process.env.FRONTEND_URL  // production frontend
 ];
 
 // Middleware
@@ -21,7 +21,7 @@ app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use(cors({
   origin: function(origin, callback){
-    if(!origin) return callback(null, true); // mobile apps, postman
+    if(!origin) return callback(null, true); // Postman, mobile apps
     if(allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error("Not allowed by CORS"));
   },
@@ -29,11 +29,12 @@ app.use(cors({
 }));
 
 // Routes
+app.get("/", (req, res) => res.send("Chat Backend is running 🚀")); // root route
 app.use("/api/status", (req, res) => res.send("server is live 🚀"));
 app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
 
-// Socket.io
+// Socket.io setup
 export const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -51,6 +52,7 @@ io.on("connection", (socket) => {
 
   if(userId) userSocketMap[userId] = socket.id;
 
+  // Broadcast online users
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
   socket.on("disconnect", () => {
@@ -63,6 +65,7 @@ io.on("connection", (socket) => {
 // Connect to MongoDB
 await connectDB();
 
+// Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on PORT: ${PORT}`);
